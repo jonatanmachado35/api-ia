@@ -12,5 +12,6 @@ def get_llm():
         model="gemini-1.5-flash",
         google_api_key=api_key,
         temperature=0.7,
-        max_tokens=2048
+        max_tokens=2048,
+        convert_system_message_to_human=True
     )
