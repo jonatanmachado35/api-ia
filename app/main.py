@@ -52,5 +52,13 @@ def chat(request: ChatRequest):
         return ChatResponse(response=response)
 
     except Exception as e:
+        error_message = str(e).lower()
         print(f"[ERROR] {str(e)}")
+        
+        if any(keyword in error_message for keyword in ["quota", "limit", "resource_exhausted", "429"]):
+            raise HTTPException(
+                status_code=429,
+                detail="Limite de créditos da API do Google Gemini excedido. Tente novamente mais tarde."
+            )
+        
         raise HTTPException(status_code=500, detail=str(e))
