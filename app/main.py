@@ -35,6 +35,9 @@ def health_check():
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     try:
+        print(f"[REQUEST] message: {request.message[:100]}...")
+        print(f"[REQUEST] agent_type: {request.agent.type}")
+        
         chain = build_agent(
             agent_type=request.agent.type,
             persona=request.agent.persona.model_dump(),
@@ -42,8 +45,12 @@ def chat(request: ChatRequest):
         )
 
         response = chain.invoke({"input": request.message})
+        
+        print(f"[RESPONSE] length: {len(response)}")
+        print(f"[RESPONSE] content: {response[:200]}...")
 
         return ChatResponse(response=response)
 
     except Exception as e:
+        print(f"[ERROR] {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
