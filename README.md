@@ -4,14 +4,16 @@
 
 1. Criar Web Service
 2. Conectar repositório
-3. Configurar variável de ambiente: `GOOGLE_API_KEY`
+3. Configurar variáveis de ambiente:
+   - `APIFREE_API_KEY`
+   - `APIFREE_BASE_URL` (opcional, padrão: https://apifree.ai/v1)
 4. Deploy automático
 
 ## Executar localmente
 
 ```bash
 pip install -r requirements.txt
-export GOOGLE_API_KEY=sua_chave
+export APIFREE_API_KEY=sua_chave
 uvicorn app.main:app --reload --port 10000
 ```
 
@@ -22,6 +24,7 @@ POST /chat
 ```json
 {
   "message": "crie um post sobre IA",
+  "model": "gpt-4o-mini",
   "agent": {
     "type": "social_media",
     "persona": {
@@ -36,3 +39,12 @@ POST /chat
   }
 }
 ```
+
+## Modelos disponíveis
+
+Qualquer modelo suportado por apifree.ai:
+- gpt-4o-mini
+- gpt-4o
+- claude-3-5-sonnet
+- gemini-2.0-flash
+- etc.

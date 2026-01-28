@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from app.agent_factory import build_agent
 
 app = FastAPI(title="AI Agent API")
@@ -21,6 +21,7 @@ class Agent(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     agent: Agent
+    model: Optional[str] = "gpt-4o-mini"
 
 
 class ChatResponse(BaseModel):
@@ -37,11 +38,13 @@ def chat(request: ChatRequest):
     try:
         print(f"[REQUEST] message: {request.message[:100]}...")
         print(f"[REQUEST] agent_type: {request.agent.type}")
+        print(f"[REQUEST] model: {request.model}")
         
         chain = build_agent(
             agent_type=request.agent.type,
             persona=request.agent.persona.model_dump(),
-            rules=request.agent.rules
+            rules=request.agent.rules,
+            model=request.model
         )
 
         response = chain.invoke({"input": request.message})
@@ -58,7 +61,7 @@ def chat(request: ChatRequest):
         if any(keyword in error_message for keyword in ["quota", "limit", "resource_exhausted", "429"]):
             raise HTTPException(
                 status_code=429,
-                detail="Limite de créditos da API do Google Gemini excedido. Tente novamente mais tarde."
+                detail="Limite de créditos da API excedido. Tente novamente mais tarde."
             )
         
         raise HTTPException(status_code=500, detail=str(e))

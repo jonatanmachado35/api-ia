@@ -1,17 +1,15 @@
 import os
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 
 
-def get_llm():
-    api_key = os.getenv("GOOGLE_API_KEY")
+def get_llm(model: str = "gpt-4o-mini"):
+    api_key = os.getenv("APIFREE_API_KEY", "default")
+    base_url = os.getenv("APIFREE_BASE_URL", "https://apifree.ai/v1")
     
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY environment variable not set")
-    
-    return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=api_key,
+    return ChatOpenAI(
+        model=model,
+        api_key=api_key,
+        base_url=base_url,
         temperature=0.7,
-        max_tokens=2048,
-        convert_system_message_to_human=True
+        max_tokens=2048
     )

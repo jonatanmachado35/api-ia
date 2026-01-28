@@ -5,8 +5,8 @@ from app.llm_selector import get_llm
 from app.prompts import get_base_prompt
 
 
-def build_agent(agent_type: str, persona: Dict[str, str], rules: List[str]):
-    llm = get_llm()
+def build_agent(agent_type: str, persona: Dict[str, str], rules: List[str], model: str = "gpt-4o-mini"):
+    llm = get_llm(model=model)
     
     base_prompt = get_base_prompt(agent_type)
     
