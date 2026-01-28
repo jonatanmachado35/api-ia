@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: api-ia
+    env: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APIFREE_API_KEY
+        sync: false
+      - key: APIFREE_BASE_URL
+        value: https://apifree.ai/v1
