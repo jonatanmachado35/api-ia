@@ -11,5 +11,7 @@ def get_llm(model: str = "gpt-4o-mini"):
         api_key=api_key,
         base_url=base_url,
         temperature=0.7,
-        max_tokens=2048
+        max_tokens=2048,
+        # Garantir que retorna metadados de uso
+        model_kwargs={"stream_options": {"include_usage": True}} if "gpt" in model.lower() else {}
     )

@@ -26,6 +26,8 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+    cost: Optional[float] = None
+    total_tokens: Optional[int] = None
 
 
 @app.get("/")
@@ -47,12 +49,28 @@ def chat(request: ChatRequest):
             model=request.model
         )
 
-        response = chain.invoke({"input": request.message})
+        result = chain.invoke({"input": request.message})
         
-        print(f"[RESPONSE] length: {len(response)}")
-        print(f"[RESPONSE] content: {response[:200]}...")
+        # Extrair resposta e metadados
+        if isinstance(result, dict):
+            response_text = result.get("response", str(result))
+            cost = result.get("cost")
+            total_tokens = result.get("total_tokens")
+        else:
+            response_text = str(result)
+            cost = None
+            total_tokens = None
+        
+        print(f"[RESPONSE] length: {len(response_text)}")
+        print(f"[RESPONSE] content: {response_text[:200]}...")
+        if cost is not None:
+            print(f"[USAGE] cost: {cost}, total_tokens: {total_tokens}")
 
-        return ChatResponse(response=response)
+        return ChatResponse(
+            response=response_text,
+            cost=cost,
+            total_tokens=total_tokens
+        )
 
     except Exception as e:
         error_message = str(e).lower()
