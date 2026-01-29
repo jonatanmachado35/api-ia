@@ -51,15 +51,17 @@ def chat(request: ChatRequest):
 
         result = chain.invoke({"input": request.message})
         
-        # Extrair resposta e metadados
-        if isinstance(result, dict):
-            response_text = result.get("response", str(result))
-            cost = result.get("cost")
-            total_tokens = result.get("total_tokens")
-        else:
-            response_text = str(result)
-            cost = None
-            total_tokens = None
+        # Garantir que result é sempre um dicionário
+        if not isinstance(result, dict):
+            result = {"response": str(result), "cost": None, "total_tokens": None}
+        
+        response_text = result.get("response", str(result))
+        cost = result.get("cost")
+        total_tokens = result.get("total_tokens")
+        
+        # Garantir que response_text é uma string
+        if not isinstance(response_text, str):
+            response_text = str(response_text)
         
         print(f"[RESPONSE] length: {len(response_text)}")
         print(f"[RESPONSE] content: {response_text[:200]}...")

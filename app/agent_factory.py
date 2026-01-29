@@ -7,37 +7,51 @@ from app.prompts import get_base_prompt
 
 def extract_response_and_usage(ai_message):
     """Extrai o conteúdo e metadados de uso da resposta da LLM"""
-    content = ai_message.content
+    # Garantir que ai_message não é None ou string
+    if ai_message is None:
+        return {'response': '', 'cost': None, 'total_tokens': None}
+    
+    if isinstance(ai_message, str):
+        return {'response': ai_message, 'cost': None, 'total_tokens': None}
+    
+    # Extrair conteúdo
+    content = ai_message.content if hasattr(ai_message, 'content') else str(ai_message)
+    
+    # Garantir que content é string
+    if not isinstance(content, str):
+        content = str(content)
     
     # Tentar extrair usage_metadata do response_metadata
-    usage_data = {}
+    usage_data = {'cost': None, 'total_tokens': None}
+    
     if hasattr(ai_message, 'response_metadata'):
         response_metadata = ai_message.response_metadata
         
         # Verificar se existe usage no response_metadata
-        if 'usage' in response_metadata:
-            usage = response_metadata['usage']
-            usage_data = {
-                'cost': usage.get('cost'),
-                'total_tokens': usage.get('total_tokens')
-            }
-        # Ou token_usage (dependendo do provider)
-        elif 'token_usage' in response_metadata:
-            token_usage = response_metadata['token_usage']
-            usage_data = {
-                'cost': token_usage.get('cost'),
-                'total_tokens': token_usage.get('total_tokens')
-            }
+        if isinstance(response_metadata, dict):
+            if 'usage' in response_metadata:
+                usage = response_metadata['usage']
+                usage_data['cost'] = usage.get('cost')
+                usage_data['total_tokens'] = usage.get('total_tokens')
+            # Ou token_usage (dependendo do provider)
+            elif 'token_usage' in response_metadata:
+                token_usage = response_metadata['token_usage']
+                usage_data['cost'] = token_usage.get('cost')
+                usage_data['total_tokens'] = token_usage.get('total_tokens')
     
     # Também verificar usage_metadata direto
     if hasattr(ai_message, 'usage_metadata') and ai_message.usage_metadata:
         usage_metadata = ai_message.usage_metadata
-        if not usage_data.get('total_tokens') and 'total_tokens' in usage_metadata:
-            usage_data['total_tokens'] = usage_metadata['total_tokens']
+        if isinstance(usage_metadata, dict):
+            if not usage_data['total_tokens'] and 'total_tokens' in usage_metadata:
+                usage_data['total_tokens'] = usage_metadata['total_tokens']
+            if not usage_data['cost'] and 'cost' in usage_metadata:
+                usage_data['cost'] = usage_metadata['cost']
     
     return {
         'response': content,
-        **usage_data
+        'cost': usage_data['cost'],
+        'total_tokens': usage_data['total_tokens']
     }
 
 
