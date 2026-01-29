@@ -35,21 +35,32 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat")
 def chat(request: ChatRequest):
     try:
         print(f"[REQUEST] message: {request.message[:100]}...")
         print(f"[REQUEST] agent_type: {request.agent.type}")
         print(f"[REQUEST] model: {request.model}")
+        print(f"[REQUEST] persona type: {type(request.agent.persona)}")
+        
+        # Converter persona para dict manualmente
+        persona_dict = {
+            "tone": request.agent.persona.tone,
+            "style": request.agent.persona.style,
+            "focus": request.agent.persona.focus
+        }
+        print(f"[REQUEST] persona_dict: {persona_dict}")
         
         chain = build_agent(
             agent_type=request.agent.type,
-            persona=request.agent.persona.model_dump(),
+            persona=persona_dict,
             rules=request.agent.rules,
             model=request.model
         )
 
+        print("[CHAIN] Invoking chain...")
         result = chain.invoke({"input": request.message})
+        print(f"[CHAIN] Result type: {type(result)}")
         
         # Garantir que result é sempre um dicionário
         if not isinstance(result, dict):
@@ -68,11 +79,15 @@ def chat(request: ChatRequest):
         if cost is not None:
             print(f"[USAGE] cost: {cost}, total_tokens: {total_tokens}")
 
-        return ChatResponse(
-            response=response_text,
-            cost=cost,
-            total_tokens=total_tokens
-        )
+        # Criar resposta manualmente para garantir tipos corretos
+        response_data = {
+            "response": response_text,
+            "cost": cost,
+            "total_tokens": total_tokens
+        }
+        print(f"[RESPONSE] Data dict: {response_data}")
+        
+        return response_data
 
     except Exception as e:
         error_message = str(e).lower()
