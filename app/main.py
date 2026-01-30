@@ -25,7 +25,9 @@ class Agent(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     agent: Agent
-    model: Optional[str] = "openai/gpt-5-mini"
+    model: Optional[str] = None  # Se None, usa padrão
+    max_tokens: Optional[int] = None  # Se None, usa padrão
+    stream: Optional[bool] = False  # Sempre false por enquanto
 
 
 class ChatResponse(BaseModel):
@@ -44,7 +46,8 @@ def chat(request: ChatRequest):
     try:
         print(f"[REQUEST] message: {request.message[:100]}...")
         print(f"[REQUEST] agent_type: {request.agent.type}")
-        print(f"[REQUEST] model: {request.model}")
+        print(f"[REQUEST] model (received): {request.model}")
+        print(f"[REQUEST] max_tokens (received): {request.max_tokens}")
         print(f"[REQUEST] persona type: {type(request.agent.persona)}")
         
         # Converter persona para dict manualmente
@@ -55,11 +58,19 @@ def chat(request: ChatRequest):
         }
         print(f"[REQUEST] persona_dict: {persona_dict}")
         
+        # Usar valores padrão se não fornecidos
+        model = request.model or "openai/gpt-5-mini"
+        max_tokens = request.max_tokens or 2048
+        
+        print(f"[REQUEST] model (final): {model}")
+        print(f"[REQUEST] max_tokens (final): {max_tokens}")
+        
         chain = build_agent(
             agent_type=request.agent.type,
             persona=persona_dict,
             rules=request.agent.rules,
-            model=request.model
+            model=model,
+            max_tokens=max_tokens
         )
 
         print("[CHAIN] Invoking chain...")

@@ -3,11 +3,11 @@ from app.custom_llm import APIFreeLLM
 from app.prompts import get_base_prompt
 
 
-def build_agent(agent_type: str, persona: Dict[str, str], rules: List[str], model: str = "openai/gpt-5-mini"):
+def build_agent(agent_type: str, persona: Dict[str, str], rules: List[str], model: str = "openai/gpt-5-mini", max_tokens: int = 2048):
     """
     Constrói um agente usando cliente HTTP customizado para APIFREE
     """
-    llm = APIFreeLLM(model=model)
+    llm = APIFreeLLM(model=model, max_tokens=max_tokens)
     
     base_prompt = get_base_prompt(agent_type)
     
