@@ -1,7 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from dotenv import load_dotenv
 from app.agent_factory import build_agent
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 app = FastAPI(title="AI Agent API")
 
@@ -21,7 +25,7 @@ class Agent(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     agent: Agent
-    model: Optional[str] = "gpt-4o-mini"
+    model: Optional[str] = "openai/gpt-5-mini"
 
 
 class ChatResponse(BaseModel):
@@ -61,6 +65,7 @@ def chat(request: ChatRequest):
         print("[CHAIN] Invoking chain...")
         result = chain.invoke({"input": request.message})
         print(f"[CHAIN] Result type: {type(result)}")
+        print(f"[CHAIN] Result: {result}")
         
         # Garantir que result é sempre um dicionário
         if not isinstance(result, dict):
@@ -90,8 +95,12 @@ def chat(request: ChatRequest):
         return response_data
 
     except Exception as e:
-        error_message = str(e).lower()
+        import traceback
         print(f"[ERROR] {str(e)}")
+        print("[ERROR] Full traceback:")
+        traceback.print_exc()
+        
+        error_message = str(e).lower()
         
         if any(keyword in error_message for keyword in ["quota", "limit", "resource_exhausted", "429"]):
             raise HTTPException(
